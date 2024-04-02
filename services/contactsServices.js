@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 const contactsPath = path.join("db", "contacts.json");
 
@@ -43,7 +44,7 @@ export async function addContact(name, email, phone) {
   try {
     const data = await fs.readFile(contactsPath, 'utf-8');
     const contacts = JSON.parse(data);
-    const newContact = { id: Date.now(), name, email, phone };
+    const newContact = { id: uuidv4(), name, email, phone };
     contacts.push(newContact);
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return newContact;
