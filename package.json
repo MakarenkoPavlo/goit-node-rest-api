@@ -7,15 +7,12 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "joi": "^17.11.0",
-<<<<<<< Updated upstream
+    "mongoose": "^8.3.1",
     "morgan": "^1.10.0",
     "uuid": "^9.0.1"
-=======
-    "mongoose": "^8.3.0",
-    "morgan": "^1.10.0"
->>>>>>> Stashed changes
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

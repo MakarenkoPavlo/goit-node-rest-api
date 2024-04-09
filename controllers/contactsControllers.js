@@ -76,4 +76,3 @@ export const updateContact = async (req, res, next) => {
     next(HttpError(500, "Server error"));
   }
 };
-
