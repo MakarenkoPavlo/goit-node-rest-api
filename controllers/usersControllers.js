@@ -108,14 +108,17 @@ export const updateSubscriptionUser = catchAsync(async (req, res) => {
   const { subscription } = req.body;
 
   if (!allowedSubscriptions.includes(subscription)) {
-    throw new HttpError(400, "Invalid subscription type");
+    throw new HttpError(400, "Invalid subscription type. Subscription must be one of: 'starter', 'pro', 'business'");
   }
 
-  req.user.subscription = subscription;
-  await req.user.save();
+  const user = req.user;
+
+  user.subscription = subscription;
+
+  await user.save();
 
   res.status(200).json({
     message: "Subscription updated successfully",
-    subscription: req.user.subscription,
+    subscription: user.subscription,
   });
 });

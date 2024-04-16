@@ -3,9 +3,36 @@ import { catchAsync } from '../services/catchAsync.js';
 import { Contact } from '../models/contactModel.js';
 import HttpError from "../helpers/HttpError.js";
 
-export const getAllContacts = catchAsync( async (req, res) => {
-    const contacts = await listContacts();
-    res.status(200).json(contacts);
+export const getAllContacts = catchAsync(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const favorite = req.query.favorite === 'true';
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+
+  let query = {}; 
+
+  if (favorite) {
+    query = { ...query, favorite: true };
+  }
+
+  const totalContacts = await Contact.countDocuments(query); 
+  const totalPages = Math.ceil(totalContacts / limit);
+
+  const contacts = await Contact.find(query)
+    .skip(startIndex)
+    .limit(limit);
+
+  if (startIndex >= totalContacts) {
+    throw new HttpError(404, 'Страница не знайдена');
+  }
+
+  res.status(200).json({
+    contacts,
+    page,
+    totalPages,
+  });
 });
 
 export const getOneContact = catchAsync (async (req, res) => {
