@@ -1,8 +1,9 @@
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import User from '../models/User.js'; 
-import { registerUsersSchema } from '../validators/userValidation.js'; 
+import { User } from "../models/userModel.js";
 import HttpError from '../helpers/HttpError.js'; 
 import { catchAsync } from '../services/catchAsync.js';
+import { registerUsersSchema, loginUsersSchema } from '../schemas/usersSchemas.js';
 
 export const registerUserController = catchAsync (async (req, res, next) => {
     const { email, password } = req.body;
@@ -35,7 +36,7 @@ export const registerUserController = catchAsync (async (req, res, next) => {
 export const loginUserController = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
-  const { error } = loginSchema.validate({ email, password });
+  const { error } = loginUsersSchema.validate({ email, password });
   if (error) {
     throw new HttpError(400, error.details[0].message);
   }
@@ -83,4 +84,38 @@ export const logoutUserController = catchAsync(async (req, res) => {
   await user.save();
 
   res.status(204).end();
+});
+
+export const currentUser = catchAsync(async (req, res) => {
+  const userId = req.user._id;
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new HttpError(401, "Not authorized");
+  }
+
+  const { email, subscription } = user;
+
+  res.status(200).json({
+    email,
+    subscription,
+  });
+});
+
+export const updateSubscriptionUser = catchAsync(async (req, res) => {
+  const allowedSubscriptions = ["starter", "pro", "business"];
+  const { subscription } = req.body;
+
+  if (!allowedSubscriptions.includes(subscription)) {
+    throw new HttpError(400, "Invalid subscription type");
+  }
+
+  req.user.subscription = subscription;
+  await req.user.save();
+
+  res.status(200).json({
+    message: "Subscription updated successfully",
+    subscription: req.user.subscription,
+  });
 });

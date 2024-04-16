@@ -1,10 +1,17 @@
-const { Router } = require("express");
+import { Router } from "express";
+import { currentUser, loginUserController, logoutUserController, registerUserController, updateSubscriptionUser } from "../controllers/usersControllers.js";
+import { verifyToken } from "../helpers/tockenCheck.js";
 
+const userRouter = Router();
 
-const userRouter = router();
+userRouter.post('/register', registerUserController);
 
-userRouter.post('/register');
+userRouter.post('/login', loginUserController);
 
-userRouter.post('/login');
+userRouter.post('/logout', verifyToken, logoutUserController);
 
-export { userRouter };
+userRouter.get('/current', verifyToken, currentUser);
+
+userRouter.patch('/', verifyToken, updateSubscriptionUser);
+
+export default userRouter;
