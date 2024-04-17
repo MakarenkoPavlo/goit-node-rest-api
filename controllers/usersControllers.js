@@ -33,7 +33,7 @@ export const registerUserController = catchAsync (async (req, res, next) => {
     });
 });
 
-export const loginUserController = catchAsync(async (req, res, next) => {
+export const loginUserController = catchAsync (async (req, res, next) => {
   const { email, password } = req.body;
 
   const { error } = loginUsersSchema.validate({ email, password });
@@ -68,7 +68,7 @@ export const loginUserController = catchAsync(async (req, res, next) => {
 });
 
 
-export const logoutUserController = catchAsync(async (req, res) => {
+export const logoutUserController = catchAsync (async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: "Not authorized" });
   }
@@ -103,7 +103,7 @@ export const currentUser = catchAsync(async (req, res) => {
   });
 });
 
-export const updateSubscriptionUser = catchAsync(async (req, res) => {
+export const updateSubscriptionUser = catchAsync (async (req, res) => {
   const allowedSubscriptions = ["starter", "pro", "business"];
   const { subscription } = req.body;
 

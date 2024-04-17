@@ -3,7 +3,7 @@ import { catchAsync } from '../services/catchAsync.js';
 import { Contact } from '../models/contactModel.js';
 import HttpError from "../helpers/HttpError.js";
 
-export const getAllContacts = catchAsync(async (req, res) => {
+export const getAllContacts = catchAsync (async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 20;
   const favorite = req.query.favorite === 'true';
@@ -56,13 +56,38 @@ export const deleteContact = catchAsync (async (req, res) => {
     res.status(200).json(removedContact);
   });
 
-export const createContact = catchAsync(async (req, res) => {
-  const newContact = await Contact.create(req.body);
- 
-    res.status(201).json(newContact);
-});
+export const createContact = async (req, res) => {
+  const { name, email, phone, favorite } = req.body;
+  
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ message: "User not authenticated" });
+  }
 
-export const updateContact = catchAsync(async (req, res) => {
+  const ownerId = req.user._id;
+
+  try {
+    const existingContact = await Contact.findOne({ email, owner: ownerId });
+
+    if (existingContact) {
+      return res.status(409).json({ message: 'Contact with this email already exists' });
+    }
+
+    const newContact = new Contact({
+      owner: ownerId,
+      name,
+      email,
+      phone,
+      favorite
+    });
+
+    const savedContact = await newContact.save();
+    res.status(201).json(savedContact);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const updateContact = catchAsync (async (req, res) => {
   const { id } = req.params;
 
   const updatedContact = await putUpdateContact(id, req.body);
@@ -76,7 +101,7 @@ export const updateContact = catchAsync(async (req, res) => {
   res.status(200).json(updatedContact);
 });
 
-export const updateStatusContacts = catchAsync(async (req, res) => {
+export const updateStatusContacts = catchAsync (async (req, res) => {
   const { id } = req.params;
 
   const updatedStatusContact = await updateStatusContact(id, req.body);

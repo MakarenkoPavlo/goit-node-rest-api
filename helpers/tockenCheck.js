@@ -1,5 +1,3 @@
-import jwt from "jsonwebtoken";
-import { User } from "../models/userModel.js";
 import { catchAsync } from "../services/catchAsync.js";
 
 export const verifyToken = catchAsync(async (req, res, next) => {
@@ -11,7 +9,13 @@ export const verifyToken = catchAsync(async (req, res, next) => {
     return res.status(401).json({ message: "Not authorized" });
   }
 
-  const decodedToken = jwt.verify(token, SECRET_KEY);
+  const decodedToken = jwt.verify(token, SECRET_KEY)
+    .catch(() => null); 
+
+  if (!decodedToken) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+
   const userId = decodedToken.userId;
 
   const user = await User.findById(userId);
