@@ -25,7 +25,7 @@ export const getAllContacts = catchAsync (async (req, res) => {
     .limit(limit);
 
   if (startIndex >= totalContacts) {
-    throw new HttpError(404, 'Страница не знайдена');
+    throw HttpError(404, 'Страница не знайдена');
   }
 
   res.status(200).json({

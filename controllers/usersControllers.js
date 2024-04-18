@@ -11,12 +11,12 @@ export const registerUserController = catchAsync (async (req, res, next) => {
     const { error } = registerUsersSchema.validate({ email, password });
 
     if (error) {
-      throw new HttpError(400, error.details[0].message); 
+      throw HttpError(400, error.details[0].message); 
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new HttpError(409, 'Email in use'); 
+      throw HttpError(409, 'Email in use'); 
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -38,17 +38,17 @@ export const loginUserController = catchAsync (async (req, res, next) => {
 
   const { error } = loginUsersSchema.validate({ email, password });
   if (error) {
-    throw new HttpError(400, error.details[0].message);
+    throw HttpError(400, error.details[0].message);
   }
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new HttpError(401, 'Email or password is wrong');
+    throw HttpError(401, 'Email or password is wrong');
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    throw new HttpError(401, 'Email or password is wrong');
+    throw HttpError(401, 'Email or password is wrong');
   }
 
   const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
@@ -92,7 +92,7 @@ export const currentUser = catchAsync(async (req, res) => {
   const user = await User.findById(userId);
 
   if (!user) {
-    throw new HttpError(401, "Not authorized");
+    throw HttpError(401, "Not authorized");
   }
 
   const { email, subscription } = user;
@@ -108,7 +108,7 @@ export const updateSubscriptionUser = catchAsync (async (req, res) => {
   const { subscription } = req.body;
 
   if (!allowedSubscriptions.includes(subscription)) {
-    throw new HttpError(400, "Invalid subscription type. Subscription must be one of: 'starter', 'pro', 'business'");
+    throw HttpError(400, "Invalid subscription type. Subscription must be one of: 'starter', 'pro', 'business'");
   }
 
   const user = req.user;
