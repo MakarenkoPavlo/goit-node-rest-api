@@ -1,4 +1,7 @@
+import jwt from 'jsonwebtoken';
 import { catchAsync } from "../services/catchAsync.js";
+import { User } from "../models/userModel.js";
+
 
 export const verifyToken = catchAsync(async (req, res, next) => {
   const { SECRET_KEY } = process.env;
