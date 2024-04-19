@@ -1,7 +1,6 @@
 import path from 'path';
 import { Contact } from '../models/contactModel.js';
 
-const contactsPath = path.join("db", "contacts.json");
 
 
 export const listContacts = () => Contact.find();

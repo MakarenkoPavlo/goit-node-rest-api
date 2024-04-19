@@ -51,7 +51,7 @@ export const loginUserController = catchAsync (async (req, res, next) => {
     throw HttpError(401, 'Email or password is wrong');
   }
 
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
     expiresIn: '1h' 
   });
 
