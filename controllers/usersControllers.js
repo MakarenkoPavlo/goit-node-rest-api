@@ -33,7 +33,8 @@ export const registerUserController = catchAsync (async (req, res, next) => {
     });
 });
 
-export const loginUserController = catchAsync (async (req, res, next) => {
+export const loginUserController = catchAsync(async (req, res, next) => {
+  const { SECRET_KEY } = process.env;
   const { email, password } = req.body;
 
   const { error } = loginUsersSchema.validate({ email, password });
@@ -51,7 +52,7 @@ export const loginUserController = catchAsync (async (req, res, next) => {
     throw HttpError(401, 'Email or password is wrong');
   }
 
-  const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+  const token = jwt.sign({ userId: user._id }, SECRET_KEY, {
     expiresIn: '1h' 
   });
 
@@ -95,7 +96,7 @@ export const currentUser = catchAsync(async (req, res) => {
     throw HttpError(401, "Not authorized");
   }
 
-  const { email, subscription } = user;
+  // const { email, subscription } = user;
 
   res.status(200).json({
     email,
