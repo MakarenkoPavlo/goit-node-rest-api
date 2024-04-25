@@ -18,8 +18,12 @@ const userSchema = new Schema({
   token: {
     type: String,
     default: null
-  }
+  },
+  avatarURL: {
+			type: String,
+		}
 });
+
 
 export const User = model('User', userSchema);
 

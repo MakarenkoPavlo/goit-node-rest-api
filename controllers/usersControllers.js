@@ -1,9 +1,13 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import gravatar from 'gravatar';
 import { User } from "../models/userModel.js";
 import HttpError from '../helpers/HttpError.js'; 
 import { catchAsync } from '../services/catchAsync.js';
 import { registerUsersSchema, loginUsersSchema } from '../schemas/usersSchemas.js';
+import path from 'path';
+import Jimp from 'jimp';
+import fs from 'fs';
 
 export const registerUserController = catchAsync (async (req, res, next) => {
     const { email, password } = req.body;
@@ -14,21 +18,25 @@ export const registerUserController = catchAsync (async (req, res, next) => {
       throw HttpError(400, error.details[0].message); 
     }
 
+    const avatarURL = gravatar.url(email, { s: '250', d: 'retro' });
+  
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw HttpError(409, 'Email in use'); 
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newUser = new User({ email, password: hashedPassword });
+    const newUser = new User({ email, password: hashedPassword, avatarURL  });
 
     const savedUser = await newUser.save();
 
     res.status(201).json({
       user: {
         email: savedUser.email,
-        subscription: savedUser.subscription
+        subscription: savedUser.subscription,
+         avatarURL: savedUser.avatarURL
       }
     });
 });
@@ -96,7 +104,7 @@ export const currentUser = catchAsync(async (req, res) => {
     throw HttpError(401, "Not authorized");
   }
 
-  // const { email, subscription } = user;
+  const { email, subscription } = user;
 
   res.status(200).json({
     email,
@@ -121,5 +129,40 @@ export const updateSubscriptionUser = catchAsync (async (req, res) => {
   res.status(200).json({
     message: "Subscription updated successfully",
     subscription: user.subscription,
+  });
+});
+
+export const updateAvatar = catchAsync(async (req, res) => {
+  const userId = req.user._id;
+  const file = req.file; 
+
+  if (!file) {
+    throw HttpError(400, "No file uploaded");
+  }
+
+  const uniqueFileName = `${userId}_${Date.now()}${path.extname(file.originalname)}`;
+  const tmpPath = path.join(__dirname, '..', 'tmp', uniqueFileName);
+  const targetPath = path.join(__dirname, '..', 'public', 'avatars', uniqueFileName);
+
+  await Jimp.read(file.path)
+    .then(image => image.cover(250, 250).write(tmpPath))
+    .catch(err => {
+      throw HttpError(500, "Failed to process image");
+    });
+
+  fs.rename(tmpPath, targetPath, async err => {
+    if (err) {
+      throw HttpError(500, "Failed to save image");
+    }
+
+    const avatarURL = `/avatars/${uniqueFileName}`;
+
+    const user = await User.findByIdAndUpdate(userId, { avatarURL }, { new: true });
+
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    res.status(200).json({ avatarURL });
   });
 });
