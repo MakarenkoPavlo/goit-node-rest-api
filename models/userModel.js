@@ -1,5 +1,3 @@
-import { Schema, model } from 'mongoose';
-
 const userSchema = new Schema({
   password: {
     type: String,
@@ -20,7 +18,7 @@ const userSchema = new Schema({
     default: null
   },
   avatarURL: {
-			type: String,
+    type: String,
   },
   verify: {
     type: Boolean,
@@ -28,10 +26,6 @@ const userSchema = new Schema({
   },
   verificationToken: {
     type: String,
-    required: [true, 'Verify token is required'],
+    required: false,
   },
 });
-
-
-export const User = model('User', userSchema);
-
