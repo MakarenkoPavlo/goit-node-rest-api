@@ -1,3 +1,5 @@
+import { Schema, model } from 'mongoose';
+
 const userSchema = new Schema({
   password: {
     type: String,
@@ -29,3 +31,5 @@ const userSchema = new Schema({
     required: false,
   },
 });
+
+export const User = model('User', userSchema);
