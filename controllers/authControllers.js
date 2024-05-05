@@ -23,20 +23,17 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-export const sendVerificationEmail = async (email) => {
-    const config = {
-  host: 'smtp.meta.ua',
-  port: 465,
-  secure: true,
-  auth: {
-    user: 'cmertnik1986@meta.ua',
-    pass: process.env.PASS_META,
-        },
+export const sendVerificationEmail = async (email, verificationToken) => {
+  const config = {
+    host: 'smtp.meta.ua',
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'cmertnik1986@meta.ua',
+      pass: process.env.PASS_META,
+    },
   };
   const transporter = nodemailer.createTransport(config);
-
-    const verificationToken = uuidv4();
-    
 
   const mailOptions = {
     from: 'cmertnik1986@meta.ua',
@@ -47,10 +44,9 @@ export const sendVerificationEmail = async (email) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    return verificationToken;
   } catch (error) {
     console.error('Error sending verification email:', error);
-    throw Error('Error sending verification email');
+    throw new Error('Error sending verification email');
   }
 };
 

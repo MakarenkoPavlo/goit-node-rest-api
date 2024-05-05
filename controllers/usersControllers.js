@@ -8,39 +8,38 @@ import { registerUsersSchema, loginUsersSchema } from '../schemas/usersSchemas.j
 import path from 'path';
 import Jimp from 'jimp';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import { sendVerificationEmail } from '../controllers/authControllers.js';
 
-export const registerUserController = catchAsync (async (req, res, next) => {
-    const { email, password } = req.body;
+export const registerUserController = async (req, res, next) => {
+  const { email, password } = req.body;
 
-    const { error } = registerUsersSchema.validate({ email, password });
-
-    if (error) {
-      throw HttpError(400, error.details[0].message); 
-    }
-
-    const avatarURL = gravatar.url(email, { s: '250', d: 'retro' });
-  
+  try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw HttpError(409, 'Email in use'); 
+      return res.status(409).json({ message: 'Email already in use' });
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const verificationToken = uuidv4();
 
-    const newUser = new User({ email, password: hashedPassword, avatarURL  });
+    const newUser = new User({ email, password, verificationToken });
 
     const savedUser = await newUser.save();
+
+    await sendVerificationEmail(email, verificationToken);
 
     res.status(201).json({
       user: {
         email: savedUser.email,
         subscription: savedUser.subscription,
-         avatarURL: savedUser.avatarURL
+        avatarURL: savedUser.avatarURL
       }
     });
-});
-
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
 export const loginUserController = catchAsync(async (req, res, next) => {
   const { SECRET_KEY } = process.env;
   const { email, password } = req.body;
