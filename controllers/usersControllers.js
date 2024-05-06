@@ -22,7 +22,9 @@ export const registerUserController = async (req, res, next) => {
 
     const verificationToken = uuidv4();
 
-    const newUser = new User({ email, password, verificationToken });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({ email, password: hashedPassword, verificationToken });
 
     const savedUser = await newUser.save();
 
